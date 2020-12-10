@@ -5,7 +5,7 @@
 #include <utility>
 typedef int32_t error_type_t;
 enum {
-  MAX_BOUQUET_COUNT = 64,  // max bouquet count = 32 * MAX_BOUQUET_COUNT
+  MAX_BOUQUET_COUNT = 64,
   MAX_SERVICE_NAME_LENGTH = 32,
   MAX_TP_COUNT = 128,
   MAX_PROG_COUNT = 1024,
@@ -72,21 +72,27 @@ struct data_base_t {
   uint16_t view_count;  // count of prog in view
   uint16_t tp_count;
   uint16_t bouquet_count;
+  uint8_t current_bat_attr;
+  uint8_t current_favor_attr;
+  uint8_t current_type_attr;  // radio or video or all
+  SORT_TYPE sort_type;
+  uint16_t cur_view_list[MAX_PROG_COUNT];
   prog_node_t prog_list[MAX_PROG_COUNT];
   bat_info_t bouquet_list[MAX_BOUQUET_COUNT];
   bat_info_t favor_list[MAX_BOUQUET_COUNT];
   prog_tp_t tp_list[MAX_TP_COUNT];
-  uint32_t current_type_attr;  // radio or video or all
-  uint32_t current_bat_attr;
-  uint16_t cur_view_list[MAX_PROG_COUNT];
-  SORT_TYPE sort_type;
-  uint8_t desend_asend_flag;
   uint16_t lookup_node(const std::pair<uint16_t, uint16_t> &target) const;
   error_type_t update_prog(const prog_node_t &prog, uint16_t idx);
   error_type_t add_prog(const prog_node_t &prog);
   error_type_t modify_prog(const prog_node_t &prog,
                            const std::pair<uint16_t, uint16_t> &target);
   error_type_t del_prog(const std::pair<uint16_t, uint16_t> &target);
+  // TODO: operations related to tp
+  // TODO: tps should also be changed when updating prog
+  error_type_t modify_tp(const prog_tp_t &tp,
+                         const std::pair<uint16_t, uint16_t> &target);
+  error_type_t add_tp(const prog_tp_t &tp);
+  error_type_t del_tp(const std::pair<uint16_t, uint16_t> &target);
   error_type_t refresh(void);
 };
 #endif

@@ -13,7 +13,7 @@ error_type_t data_base_t::add_prog(const prog_node_t &prog) {
   if (i == this->prog_count) {
     this->prog_count++;
   }
-  update_prog(prog, i);
+  return update_prog(prog, i);
 }
 uint16_t data_base_t::lookup_node(
     const std::pair<uint16_t, uint16_t> &target) const {
@@ -97,4 +97,5 @@ error_type_t data_base_t::refresh(void) {
   };
   std::sort(this->prog_list, &this->prog_list[this->prog_count], sort_method);
   // TODO: 更新完数据库之后需要及时更新观察者列表
+  return 0;
 }
