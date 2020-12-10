@@ -13,6 +13,7 @@ error_type_t data_base_t::add_prog(prog_node_t *prog) {
   }
   memset(prog_in_base, 0, sizeof(prog_in_base[0]));
   memcpy(prog_in_base, prog, sizeof(prog_in_base[0]));
+  prog_in_base->b_use = true;  // 有效标记
   // TODO: link the bouquet data;
   // TODO: link the tp data;
   for (i = 0; i < this->tp_count; i++) {
