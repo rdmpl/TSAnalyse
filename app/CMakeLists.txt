@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
-project(TSAnalyseStandalone LANGUAGES CXX)
+project(app LANGUAGES CXX)
 
 # --- Import tools ----
 
@@ -23,8 +23,8 @@ CPMAddPackage(NAME TSAnalyse SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/..)
 
 file(GLOB sources CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/source/*.cpp)
 
-add_executable(TSAnalyseStandalone ${sources})
+add_executable(app ${sources})
 
-set_target_properties(TSAnalyseStandalone PROPERTIES CXX_STANDARD 17 OUTPUT_NAME "TSAnalyse")
+set_target_properties(app PROPERTIES CXX_STANDARD 17 OUTPUT_NAME "TSAnalyse")
 
-target_link_libraries(TSAnalyseStandalone TSAnalyse cxxopts)
+target_link_libraries(app TSAnalyse cxxopts)

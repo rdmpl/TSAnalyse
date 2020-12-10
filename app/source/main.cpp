@@ -1,19 +1,21 @@
-#include <TSAnalyse/TSAnalyse.h>
-#include <TSAnalyse/version.h>
 
 #include <cxxopts.hpp>
 #include <iostream>
+#include <program/program.hpp>
 #include <string>
 #include <unordered_map>
 
+#if 0
 const std::unordered_map<std::string, TSAnalyse::LanguageCode> languages{
     {"en", TSAnalyse::LanguageCode::EN},
     {"de", TSAnalyse::LanguageCode::DE},
     {"es", TSAnalyse::LanguageCode::ES},
     {"fr", TSAnalyse::LanguageCode::FR},
 };
+#endif
 
 int main(int argc, char** argv) {
+#if 0
   cxxopts::Options options(argv[0], "A program to welcome the world!");
 
   std::string language;
@@ -34,18 +36,11 @@ int main(int argc, char** argv) {
     std::cout << options.help() << std::endl;
     return 0;
   } else if (result["version"].as<bool>()) {
-    std::cout << "TSAnalyse, version " << TSAnalyse_VERSION << std::endl;
     return 0;
   }
-
-  auto langIt = languages.find(language);
-  if (langIt == languages.end()) {
-    std::cerr << "unknown language code: " << language << std::endl;
-    return 1;
-  }
-
-  TSAnalyse::TSAnalyse TSAnalyse(name);
-  std::cout << TSAnalyse.greet(langIt->second) << std::endl;
-
+#endif
+  data_base_t db;
+  db.refresh();
+  std::cout << db.lookup_node({1, 1}) << std::endl;
   return 0;
 }

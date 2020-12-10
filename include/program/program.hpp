@@ -1,6 +1,8 @@
 #ifndef PROGRAM_H__
 #define PROGRAM_H__
 #include <stdint.h>
+
+#include <utility>
 typedef int32_t error_type_t;
 enum {
   MAX_BOUQUET_COUNT = 64,  // max bouquet count = 32 * MAX_BOUQUET_COUNT
@@ -47,10 +49,10 @@ struct prog_node_t {
   uint8_t service_type;  // radio or video
   int8_t service_name[MAX_SERVICE_NAME_LENGTH];
   bool b_use;  // to flag whether this prog is in use
-  bool compare_pos(prog_node_t *other, SORT_TYPE t, uint8_t as) {
-    uint16_t v1 = t == SORT_BY_LCN ? lcn : service_id;
-    uint16_t v2 = t == SORT_BY_LCN ? t->lcn : t->service_id;
-    return v1 < v2 && as;
+  bool compare_pos(prog_node_t &other, SORT_TYPE t) {
+    uint16_t v1 = t == SORT_BY_LCN ? lcn_value : service_id;
+    uint16_t v2 = t == SORT_BY_LCN ? other.lcn_value : other.service_id;
+    return v1 < v2;
   }
 };
 struct prog_tp_t {
@@ -71,17 +73,20 @@ struct data_base_t {
   uint16_t tp_count;
   uint16_t bouquet_count;
   prog_node_t prog_list[MAX_PROG_COUNT];
-  bat_info_t bouquet_list[MAX_PROG_COUNT];
+  bat_info_t bouquet_list[MAX_BOUQUET_COUNT];
+  bat_info_t favor_list[MAX_BOUQUET_COUNT];
   prog_tp_t tp_list[MAX_TP_COUNT];
   uint32_t current_type_attr;  // radio or video or all
   uint32_t current_bat_attr;
   uint16_t cur_view_list[MAX_PROG_COUNT];
   SORT_TYPE sort_type;
   uint8_t desend_asend_flag;
-  error_type_t add_prog(prog_node_t *prog);
-  error_type_t modify_prog_by_pos(prog_node_t *prog);
-  error_type_t modify_prog_by_sid(prog_node_t *prog);
-  error_type_t del_prog_by_pos(uint16 pos);
-  error_type_t del_prog_by_sid(uint16 sid);
+  uint16_t lookup_node(const std::pair<uint16_t, uint16_t> &target) const;
+  error_type_t update_prog(const prog_node_t &prog, uint16_t idx);
+  error_type_t add_prog(const prog_node_t &prog);
+  error_type_t modify_prog(const prog_node_t &prog,
+                           const std::pair<uint16_t, uint16_t> &target);
+  error_type_t del_prog(const std::pair<uint16_t, uint16_t> &target);
+  error_type_t refresh(void);
 };
 #endif
