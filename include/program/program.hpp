@@ -23,6 +23,10 @@ enum PSI_FLAG {
   PSI_SDT_A = 0x20,
   PSI_SDT_O = 0x40,
 };
+struct res_info_t {
+  uint16_t pid;
+  uint8_t type;
+};
 struct prog_node_t {
   uint16_t service_id;
   uint16_t lcn_value;
@@ -30,13 +34,13 @@ struct prog_node_t {
   uint16_t ts_id;
   uint16_t tp_idx;
   uint16_t pmt_pid;
-  uint16_t video_pid;
-  uint16_t audio_pid;
   uint16_t pcr_pid;
   uint16_t ecm_pid;
   uint32_t service_price;
   uint32_t psi_flag;  // 标记当前节目存在于哪些表中
   uint32_t reserved;
+  res_info_t video[2];
+  res_info_t audio[2];
   uint8_t parent_lock_flag;
   uint8_t scramble_flag;
   uint8_t scramble_type;
