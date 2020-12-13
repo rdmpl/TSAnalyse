@@ -1,7 +1,9 @@
 #ifndef PROGRAM_H__
 #define PROGRAM_H__
 #include <stdint.h>
+#include <stdio.h>
 
+#include <ultilities/ultilities.hpp>
 #include <utility>
 typedef int32_t error_type_t;
 enum {
@@ -62,12 +64,14 @@ struct prog_node_t {
 struct prog_tp_t {
   uint16_t ts_id;
   uint16_t network_id;
-  uint16_t freq;
-  uint16_t botrate;
+  uint32_t freq;
   uint16_t sym;
+  uint8_t fec_inner;
 };
 struct bat_info_t {
-  uint8_t bouquet_id;
+  uint16_t ts_id;
+  uint16_t network_id;
+  uint16_t bouquet_id;
   uint8_t bouquet_name[MAX_SERVICE_NAME_LENGTH];
   uint16_t service_id[128];  // 标记bouquet包含的节目
 };

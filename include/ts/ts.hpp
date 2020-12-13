@@ -4,9 +4,19 @@
 #include <stdio.h>
 
 #include <cstring>
+#include <program/program.hpp>
 #include <ultilities/ultilities.hpp>
-#define LOG_INFO(fmt, args...) \
-  printf("%s(%d)" fmt, __FUNCTION__, __LINE__, ##args)
+#include <vector>
+
+inline uint32_t bcd2integer(uint8_t *data, uint8_t len) {
+  uint8_t i = 0;
+  uint32_t res = 0;
+  while (i < 2 * len) {
+    uint8_t bcd = (i & 0x1) ? (data[i >> 1] & 0xf) : (data[i >> 1] >> 4);
+    res = res * 10 + bcd;
+  }
+  return res;
+}
 struct ts_unit_t {
   uint16_t unit_id;
   uint8_t version_number;
@@ -15,8 +25,9 @@ struct ts_unit_t {
   uint16_t last_section_number;
   bool b_has_parsed;
   uint32_t crc32[32];
-  bool operator<(const ts_unit_t &other) const;
-  void restart(bool parsed_flag);
+  virtual bool operator<(const ts_unit_t &other) const;
+  virtual void restart(bool parsed_flag);
+  virtual ~ts_unit_t() { LOG_INFO(); }
 };
 /**
  * The Base class of all ts stream, including PAT, PMT, BAT, NIT, SDT
@@ -28,13 +39,18 @@ struct TS {
   uint16_t pid;
   uint32_t filer_id;
   uint8_t table_id;
-  uint8_t unit_count;
-  ts_unit_t unit[32];
   uint32_t last_crc32;  // calculted by unit
   bool b_need_notify;
-  TS(uint16_t pid);
+  uint16_t max_ts_num;  // equal to max_ts_num;
+  uint16_t unit_num;    // num of unit
+  uint16_t ts_num;      // num of ts_data
+  std::vector<ts_unit_t> unit;
+  TS();
+  TS(uint16_t pid, uint16_t max_count);
   virtual void reset(bool flag);
   virtual bool parse(uint8_t *data, uint16_t len, void *priv);
+  virtual bool update_callback(void) { return true; };  // 当有区块更新时回调
+  virtual bool finish_callback(void) { return true; };  // 所有区块更新完回调
   virtual uint32_t cal_crc32(void);
   virtual bool check_finish(ts_unit_t &cur_unit);
   virtual ~TS(){};

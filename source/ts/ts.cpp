@@ -1,6 +1,21 @@
 #include <algorithm>
 #include <cstring>
 #include <ts/ts.hpp>
+TS::TS() {
+  this->max_ts_num = 0;
+  this->unit.resize(0);
+  this->unit_num = 0;
+  this->pid = 0;
+  this->filer_id = 0;
+  this->last_crc32 = 0;
+  this->table_id = 0;
+}
+TS::TS(uint16_t pid, uint16_t count) : TS() {
+  this->pid = pid;
+  this->b_need_notify = true;
+  this->max_ts_num = count;
+  this->unit.resize(count);
+}
 void ts_unit_t::restart(bool parsed_flag) {
   rcv_number = 0;
   last_section_number = 0;
@@ -14,11 +29,13 @@ bool ts_unit_t::operator<(const ts_unit_t &other) const {
           this->last_section_number < other.last_section_number);
 }
 void TS::reset(bool flag) {
-  memset(this->unit, 0, sizeof(this->unit));
   this->table_id = 0;
-  this->unit_count = 0;
+  this->unit_num = 0;
   this->last_crc32 = 0;
   this->b_need_notify = flag;
+  for (uint16_t i = 0; i < this->unit.size(); ++i) {
+    this->unit[i].restart(false);
+  }
 }
 uint32_t TS::cal_crc32(void) {
   for (uint8_t i = 0; i < lengthof(this->unit); ++i) {
@@ -26,14 +43,9 @@ uint32_t TS::cal_crc32(void) {
     this->unit[i].rcv_number = 0;
     this->unit[i].b_has_parsed = true;
   }
-  std::sort(this->unit, this->unit + lengthof(this->unit));
+  std::sort(this->unit.begin(), this->unit.end());
   // TODO: calculate the crc32 of units
   return 0;
-}
-TS::TS(uint16_t pid) {
-  memset(this, 0, sizeof(*this));
-  this->pid = pid;
-  this->b_need_notify = true;
 }
 bool TS::check_finish(ts_unit_t &cur_unit) {
   uint16_t i = 0;
@@ -42,13 +54,13 @@ bool TS::check_finish(ts_unit_t &cur_unit) {
     cur_unit.rcv_cnt++;
     uint16_t min_cnt = this->unit[0].rcv_cnt;
     uint16_t max_cnt = this->unit[0].rcv_cnt;
-    for (i = 1; i < this->unit_count; i++) {
+    for (i = 1; i < this->unit_num; i++) {
       min_cnt = std::min(min_cnt, this->unit[i].rcv_cnt);
       max_cnt = std::max(max_cnt, this->unit[i].rcv_cnt);
     }
     if (max_cnt - min_cnt > 6) {
       reset(true);  // 值越大，越精确，但反应越慢
-      // TODO: updated callback
+      update_callback();
     } else if (min_cnt > 2) {
       uint32_t crc32 = cal_crc32();
       if (this->last_crc32 != crc32) {
@@ -57,15 +69,15 @@ bool TS::check_finish(ts_unit_t &cur_unit) {
             "changed.[0x%08x][0x%08x]\n",
             this->last_crc32, crc32);
         reset(true);
-        // TODO: updated callback
+        update_callback();
       } else {
-        for (i = 0; i < this->unit_count; ++i) {
+        for (i = 0; i < this->unit_num; ++i) {
           this->unit[i].restart(true);
         }
-        ret = true;  // 所有units都接收完，理论上只需要min_cnt > 2就好了
+        ret = true;
         if (b_need_notify = true) {
           b_need_notify = false;
-          // TODO: finished callback
+          finish_callback();
         }
       }
     } else {
@@ -76,7 +88,8 @@ bool TS::check_finish(ts_unit_t &cur_unit) {
 }
 bool TS::parse(uint8_t *data, uint16_t len, void *priv) {
   bool ret = false;
-  if (len < 3) {
+  if (len < 3 || data == nullptr) {
+    LOG_INFO("error\n");
     return false;
   }
   this->table_id = data[0];
@@ -93,16 +106,16 @@ bool TS::parse(uint8_t *data, uint16_t len, void *priv) {
                    (data[pos - 2] << 8) | data[pos - 1];
   uint16_t unit_id = (data[3] << 8) | data[4];
   uint8_t i = 0;
-  while (i < this->unit_count && this->unit[i].unit_id != unit_id) {
+  while (i < this->unit_num && this->unit[i].unit_id != unit_id) {
     ++i;
   }
-  if (i >= lengthof(this->unit)) {
+  if (i >= this->unit.size()) {
     LOG_INFO("Error: current ts unit too much.[%d].\n", this->table_id);
     reset(true);  // 全部重新接收
     return false;
   }
-  if (i == this->unit_count) {
-    this->unit_count++;
+  if (i == this->unit_num) {
+    this->unit_num++;
   }
   ts_unit_t &unit = this->unit[i];
   unit.unit_id = unit_id;

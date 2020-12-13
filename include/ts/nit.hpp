@@ -1,18 +1,34 @@
 
 #ifndef NIT_HPP__
 #define NIT_HPP__
+
 #include "ts.hpp"
-struct net_work_descriptor_t {
-  uint16_t ts_id;
-  uint16_t original_network_id;
-  uint16_t descriptor_length;
-  uint8_t descriptor_data[64];
+#include "vector"
+struct nit_service_info_t {
+  uint16_t service_id;
+  uint16_t service_type;
+};
+struct tp_info_t {
+  prog_tp_t tp;
+  nit_service_info_t service_list[32];
+  bool freq_parse(uint8_t *data, uint8_t len);
+  bool service_list_parse(uint8_t *data, uint8_t len);
+  virtual bool loop2_parse(uint8_t *data, uint16_t len);
+};
+struct nit_tp_info_t {
+  uint16_t network_id;
+  tp_info_t tp[32];
+  virtual bool loop1_parse(uint8_t *data, uint16_t len);
+  virtual ~nit_tp_info_t(){};
 };
 struct NIT : public TS {
-  uint16_t network_id;
-  uint16_t loop1_len;
-  uint8_t loop1_data[128];
-  net_work_descriptor_t network_descriptor[64];
+  std::vector<nit_tp_info_t> tp_info;
   virtual bool parse(uint8_t *data, uint16_t len, void *priv);
+  virtual bool update_callback(void);  // 当有区块更新时回调
+  virtual bool finish_callback(void);  // 所有区块更新完回调
+  NIT(uint16_t pid, uint16_t max_tp_count) : TS(pid, max_tp_count) {
+    tp_info.resize(max_tp_count);
+  }
+  // TODO: 要添加loop1和loop2的解析函数
 };
 #endif  // NIT_HPP__
