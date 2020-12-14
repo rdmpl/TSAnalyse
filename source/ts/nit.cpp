@@ -14,7 +14,9 @@ bool tp_info_t::service_list_parse(uint8_t *data, uint8_t len) {
     this->service_list[j].service_type = data[i + 2];
     ++j;
     i += 3;
+    // LOG_INFO("service i = %d, len = %d", i, len);
   }
+  this->service_count = j;
   if (j >= lengthof(this->service_list)) {
     LOG_INFO("Error: too much service in current tp.\n");
   }
@@ -43,9 +45,8 @@ bool tp_info_t::loop2_parse(uint8_t *data, uint16_t len) {
 }
 bool NIT::parse(uint8_t *data, uint16_t len, void *priv) {
   bool ret = false;
-  ret == TS::parse(data, len, priv);
+  ret = TS::parse(data, len, priv);
   if (ret == false) {
-    LOG_INFO("error\n");
     return false;
   }
   this->table_id = data[0];
@@ -54,6 +55,7 @@ bool NIT::parse(uint8_t *data, uint16_t len, void *priv) {
   while (i < this->ts_num && this->tp_info[i].network_id != network_id) {
     ++i;
   }
+  LOG_INFO("i = %d, max = %d", i, this->max_ts_num);
   if (i >= this->max_ts_num) {
     LOG_INFO("Error: bat num too much\n");
     return false;
@@ -63,7 +65,7 @@ bool NIT::parse(uint8_t *data, uint16_t len, void *priv) {
   nit_tp_info_t &tp_info = this->tp_info[i];
   tp_info.network_id = network_id;
   uint16_t loop1_begin = 10;
-  uint16_t loop1_end = 10 + ((data[8] & 0xf) << 4) | data[9];
+  uint16_t loop1_end = 10 + getu16len(data + 8, false);  // ((data[8] & 0xf) << 4) | data[9];
   while (loop1_begin < loop1_end) {
     uint8_t desc_tag = data[loop1_begin];
     uint8_t desc_len = data[loop1_begin + 1];
@@ -72,21 +74,30 @@ bool NIT::parse(uint8_t *data, uint16_t len, void *priv) {
   }
   uint16_t loop2_begin = loop1_end;
   // TODO: notify other thread to parse loop1 data
-  uint16_t loop2_end = loop2_begin + 2 + ((data[loop2_begin] & 0xf) << 8) |
-                       data[loop2_begin + 1];
+  uint16_t loop2_end
+      = loop2_begin + 2
+        + getu16len(data + loop2_begin,
+                    false);  //((data[loop2_begin] & 0xf) << 8) | data[loop2_begin + 1];
   loop2_begin += 2;
   i = 0;
+  LOG_INFO("Begin loop2---, loop2_begin = %d, end = %d", loop2_begin, loop2_end);
   while (loop2_begin < loop2_end) {
     tp_info.tp[i].tp.ts_id = (data[loop2_begin] << 8) | data[loop2_begin + 1];
-    tp_info.tp[i].tp.network_id =
-        (data[loop2_begin + 2] << 8) | data[loop2_begin + 3];
-    uint16_t data_len =
-        ((data[loop2_begin + 4] & 0xf) << 8) | data[loop2_begin + 5];
+    tp_info.tp[i].tp.network_id = (data[loop2_begin + 2] << 8) | data[loop2_begin + 3];
+    uint16_t data_len
+        = getu16len(data + loop2_begin + 4,
+                    false);  //((data[loop2_begin + 4] & 0xf) << 8) | data[loop2_begin + 5];
     tp_info.tp[i].loop2_parse(data + loop2_begin + 6, data_len);
     loop2_begin += (6 + data_len);
     ++i;
   }
+  LOG_INFO("loop2 end");
+  tp_info.tp_count = i;
   return false;
 }
 bool NIT::update_callback(void) { return true; };  // 当有区块更新时回调
-bool NIT::finish_callback(void) { return true; };  // 所有区块更新完回调
+bool NIT::finish_callback(void) {
+  LOG_INFO("all nit data finished.\n");
+  dump();
+  return true;
+};  // 所有区块更新完回调

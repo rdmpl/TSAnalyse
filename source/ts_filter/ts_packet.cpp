@@ -41,18 +41,26 @@ void ts_packet_t::run(void) {
       continue;
     }
     auto &section = filter[header.pid];
+    if (section.ts.size() == 0) {
+      continue;  // 不关心的section
+    }
     len = 0;
     if (header.payload_unit_start_indicator == 1) {
       if (section.data_len > 0) {
         // TODO: callback
-        LOG_INFO("ok....pid = 0x%04x, len = %d", header.pid, section.data_len);
+        // LOG_INFO("ok....pid = 0x%04x, len = %d", header.pid, section.data_len);
+        for (uint16_t i = 0; i < section.ts.size(); ++i) {
+          if (section.ts[i] != nullptr) {
+            section.ts[i]->parse(section.buffer, section.data_len, nullptr);
+          }
+        }
       }
       section.reset();
-      len = 183;
-      memcpy(section.buffer, data + 5, len);
+      uint16_t begin = 5 + data[4];
+      len = 188 - begin;
+      memcpy(section.buffer, data + begin, len);
     } else {
-      if ((section.last_header.continuity_conter + 1) % 16 !=
-          header.continuity_conter) {
+      if ((section.last_header.continuity_conter + 1) % 16 != header.continuity_conter) {
         // LOG_INFO("error: continuous error");
         section.reset();
         continue;
@@ -66,8 +74,7 @@ void ts_packet_t::run(void) {
     }
     section.data_len += len;
     if (section.data_len > 3990) {
-      LOG_INFO("error: data too long, pid = 0x%4x, len = %d", header.pid,
-               section.data_len);
+      LOG_INFO("error: data too long, pid = 0x%4x, len = %d", header.pid, section.data_len);
     }
     memcpy(&section.last_header, &header, sizeof(header));
   }

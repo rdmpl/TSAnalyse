@@ -1,19 +1,30 @@
 #ifndef TS_HPP__
 #define TS_HPP__
 #include <stdint.h>
-#include <stdio.h>
 
 #include <cstring>
 #include <program/program.hpp>
 #include <ultilities/ultilities.hpp>
 #include <vector>
-
+inline uint16_t getu16len(uint8_t *data, bool endian_big) {
+  uint16_t res;
+  uint8_t *ptr = (uint8_t *)(&res);
+  if (endian_big) {
+    ptr[0] = data[0] & 0xf;
+    ptr[1] = data[1];
+  } else {
+    ptr[0] = data[1];
+    ptr[1] = data[0] & 0xf;
+  }
+  return res;
+}
 inline uint32_t bcd2integer(uint8_t *data, uint8_t len) {
   uint8_t i = 0;
   uint32_t res = 0;
   while (i < 2 * len) {
     uint8_t bcd = (i & 0x1) ? (data[i >> 1] & 0xf) : (data[i >> 1] >> 4);
     res = res * 10 + bcd;
+    ++i;
   }
   return res;
 }
@@ -27,7 +38,7 @@ struct ts_unit_t {
   uint32_t crc32[32];
   virtual bool operator<(const ts_unit_t &other) const;
   virtual void restart(bool parsed_flag);
-  virtual ~ts_unit_t() { LOG_INFO(); }
+  virtual ~ts_unit_t() {}
 };
 /**
  * The Base class of all ts stream, including PAT, PMT, BAT, NIT, SDT

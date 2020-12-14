@@ -19,9 +19,7 @@ struct A {
   int a;
   int b;
   virtual int getVal(void) { return 1; }
-  virtual A &operator[](int i) const {
-    return *((A *)((uint8_t *)this) + i * sizeof(A));
-  }
+  virtual A &operator[](int i) const { return *((A *)((uint8_t *)this) + i * sizeof(A)); }
   virtual ~A(){};
 };
 struct B : public A {
@@ -79,7 +77,10 @@ int main(int argc, char **argv) {
     printf("%d: bp[%d]. a = %d, .b = %d\n", i, i, bp[i].a, bp[i].b);
   }
 #endif
-  ts_packet_t ts("/mnt/f/github/TSAnalyse/build/app/abc.ts");
-  ts.run();
+  ts_packet_t *ts = new ts_packet_t("/home/nfs/zhougq/github/TSAnalyse/build/app/abc.ts");
+  NIT *nit_ts = new NIT(0x10, 64);
+  ts->open_filter(nit_ts);
+  ts->run();
+  delete (nit_ts);
   return 0;
 }
