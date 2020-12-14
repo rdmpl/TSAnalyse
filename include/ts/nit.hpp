@@ -32,7 +32,8 @@ struct NIT : public TS {
     for (uint16_t i = 0; i < this->ts_num; ++i) {
       printf("\n%d: network_id = %x\n", i, tp_info[i].network_id);
       for (uint16_t j = 0; j < tp_info[i].tp_count; ++j) {
-        printf("\n%d: frq: %d, sym: %d \n", j, tp_info[i].tp[j].tp.freq, tp_info[i].tp[j].tp.sym);
+        printf("\n%d:ts_id: 0x%x, frq: %d, sym: %d, mod = %d\n", j, tp_info[i].tp[j].tp.ts_id,
+               tp_info[i].tp[j].tp.freq, tp_info[i].tp[j].tp.sym, tp_info[i].tp[j].tp.mod);
         for (uint16_t k = 0; k < tp_info[i].tp[j].service_count; k++) {
           printf("0x%x  ", tp_info[i].tp[j].service_list[k].service_id);
         }

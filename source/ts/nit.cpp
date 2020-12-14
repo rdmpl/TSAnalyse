@@ -1,10 +1,19 @@
 #include <cstring>
 #include <ts/nit.hpp>
 bool tp_info_t::freq_parse(uint8_t *data, uint8_t len) {
+  /**
+   * frequency:32
+   * reserved: 12
+   * fec_outer: 4
+   * modulation: 8
+   * symbol_rate: 28
+   * fec_inner: 4
+   */
   uint8_t i = 0;
   this->tp.freq = bcd2integer(data, 4) / 100;
-  this->tp.fec_inner = data[6] + 3;
-  this->tp.sym = bcd2integer(data + 7, 3);
+  this->tp.mod = data[6];  // data[5] == fec_outer
+  this->tp.fec_inner = data[10] & 0xf;
+  this->tp.sym = bcd2integer(data + 7, 3);  // 这里还有点问题,可能精度不够，但不管了
   return true;
 }
 bool tp_info_t::service_list_parse(uint8_t *data, uint8_t len) {
@@ -36,6 +45,8 @@ bool tp_info_t::loop2_parse(uint8_t *data, uint16_t len) {
       case 0x41:  // service list
         this->service_list_parse(data + i, tag_len);
         break;
+      case 0x83:
+        break;  // TODO: lcn parse
       default:
         break;
     }
@@ -55,7 +66,6 @@ bool NIT::parse(uint8_t *data, uint16_t len, void *priv) {
   while (i < this->ts_num && this->tp_info[i].network_id != network_id) {
     ++i;
   }
-  LOG_INFO("i = %d, max = %d", i, this->max_ts_num);
   if (i >= this->max_ts_num) {
     LOG_INFO("Error: bat num too much\n");
     return false;

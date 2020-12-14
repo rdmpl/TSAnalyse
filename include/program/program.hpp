@@ -66,6 +66,7 @@ struct prog_tp_t {
   uint16_t network_id;
   uint32_t freq;
   uint16_t sym;
+  uint8_t mod;  // modulation
   uint8_t fec_inner;
 };
 struct bat_info_t {
@@ -92,13 +93,11 @@ struct data_base_t {
   uint16_t lookup_node(const std::pair<uint16_t, uint16_t> &target) const;
   error_type_t update_prog(const prog_node_t &prog, uint16_t idx);
   error_type_t add_prog(const prog_node_t &prog);
-  error_type_t modify_prog(const prog_node_t &prog,
-                           const std::pair<uint16_t, uint16_t> &target);
+  error_type_t modify_prog(const prog_node_t &prog, const std::pair<uint16_t, uint16_t> &target);
   error_type_t del_prog(const std::pair<uint16_t, uint16_t> &target);
   // TODO: operations related to tp
   // TODO: tps should also be changed when updating prog
-  error_type_t modify_tp(const prog_tp_t &tp,
-                         const std::pair<uint16_t, uint16_t> &target);
+  error_type_t modify_tp(const prog_tp_t &tp, const std::pair<uint16_t, uint16_t> &target);
   error_type_t add_tp(const prog_tp_t &tp);
   error_type_t del_tp(const std::pair<uint16_t, uint16_t> &target);
   error_type_t refresh(void);
