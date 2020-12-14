@@ -78,7 +78,7 @@ int main(int argc, char **argv) {
   }
 #endif
   ts_packet_t *ts = new ts_packet_t("/home/nfs/zhougq/github/TSAnalyse/build/app/abc.ts");
-  NIT *nit_ts = new NIT(0x10, 64);
+  NIT *nit_ts = new NIT(0x10, 4);
   ts->open_filter(nit_ts);
   ts->run();
   delete (nit_ts);

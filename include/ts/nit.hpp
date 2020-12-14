@@ -18,7 +18,7 @@ struct tp_info_t {
 };
 struct nit_tp_info_t {
   uint16_t network_id;
-  tp_info_t tp[32];
+  tp_info_t tp[64];
   uint16_t tp_count;
   virtual bool loop1_parse(uint8_t *data, uint16_t len);
   virtual ~nit_tp_info_t(){};

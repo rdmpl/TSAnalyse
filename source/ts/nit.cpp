@@ -79,9 +79,8 @@ bool NIT::parse(uint8_t *data, uint16_t len, void *priv) {
         + getu16len(data + loop2_begin,
                     false);  //((data[loop2_begin] & 0xf) << 8) | data[loop2_begin + 1];
   loop2_begin += 2;
-  i = 0;
-  LOG_INFO("Begin loop2---, loop2_begin = %d, end = %d", loop2_begin, loop2_end);
-  while (loop2_begin < loop2_end) {
+  i = tp_info.tp_count;
+  while (loop2_begin < loop2_end && i < lengthof(tp_info.tp)) {
     tp_info.tp[i].tp.ts_id = (data[loop2_begin] << 8) | data[loop2_begin + 1];
     tp_info.tp[i].tp.network_id = (data[loop2_begin + 2] << 8) | data[loop2_begin + 3];
     uint16_t data_len
@@ -91,7 +90,9 @@ bool NIT::parse(uint8_t *data, uint16_t len, void *priv) {
     loop2_begin += (6 + data_len);
     ++i;
   }
-  LOG_INFO("loop2 end");
+  if (i >= lengthof(tp_info.tp)) {
+    LOG_INFO("error: too much tp.");
+  }
   tp_info.tp_count = i;
   return false;
 }

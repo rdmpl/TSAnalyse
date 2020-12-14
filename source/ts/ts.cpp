@@ -79,11 +79,9 @@ bool TS::check_finish(ts_unit_t &cur_unit) {
         reset(true);
         update_callback();
       } else {
-        LOG_INFO("all finished. id = 0x%x cur: 0x%x", this->unit[0].unit_id, cur_unit.unit_id);
         for (i = 0; i < this->unit_num; ++i) {
           this->unit[i].restart(true);
         }
-        LOG_INFO("all finished. id = 0x%x cur: 0x%x", this->unit[0].unit_id, cur_unit.unit_id);
         ret = true;
         if (b_need_notify == true) {
           b_need_notify = false;
@@ -98,7 +96,6 @@ bool TS::check_finish(ts_unit_t &cur_unit) {
 }
 bool TS::parse(uint8_t *data, uint16_t len, void *priv) {
   bool ret = false;
-  LOG_INFO("begin ts parse");
   if (len < 3 || data == nullptr) {
     LOG_INFO("error data too short\n");
     return false;
@@ -116,9 +113,6 @@ bool TS::parse(uint8_t *data, uint16_t len, void *priv) {
   uint32_t crc32
       = (data[pos - 4] << 24) | (data[pos - 3] << 16) | (data[pos - 2] << 8) | data[pos - 1];
   uint16_t unit_id = (data[3] << 8) | data[4];
-  if (unit_id != 0xad9c) {
-    LOG_INFO("error: unit_id = 0");
-  }
   uint16_t i = 0;
   while (i < this->unit_num && this->unit[i].unit_id != unit_id) {
     ++i;
@@ -130,12 +124,6 @@ bool TS::parse(uint8_t *data, uint16_t len, void *priv) {
   }
   if (i == this->unit_num) {
     this->unit_num++;
-  }
-  if (i == 0) {
-    LOG_INFO("error: i == 0");
-  }
-  if (i == 1) {
-    LOG_INFO("error : only one");
   }
   ts_unit_t &unit = this->unit[i];
   unit.unit_id = unit_id;
@@ -155,6 +143,5 @@ bool TS::parse(uint8_t *data, uint16_t len, void *priv) {
     unit.rcv_cnt = 0;
   }
   check_finish(unit);
-  LOG_INFO("ret = %d", ret);
   return ret;
 }
