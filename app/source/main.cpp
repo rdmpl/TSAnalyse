@@ -3,6 +3,7 @@
 #include <iostream>
 #include <program/program.hpp>
 #include <string>
+#include <ts/bat.hpp>
 #include <ts/nit.hpp>
 #include <ts_filter/ts_packet.hpp>
 #include <unordered_map>
@@ -19,7 +20,9 @@ struct A {
   int a;
   int b;
   virtual int getVal(void) { return 1; }
-  virtual A &operator[](int i) const { return *((A *)((uint8_t *)this) + i * sizeof(A)); }
+  virtual A &operator[](int i) const {
+    return *((A *)((uint8_t *)this) + i * sizeof(A));
+  }
   virtual ~A(){};
 };
 struct B : public A {
@@ -77,9 +80,12 @@ int main(int argc, char **argv) {
     printf("%d: bp[%d]. a = %d, .b = %d\n", i, i, bp[i].a, bp[i].b);
   }
 #endif
-  ts_packet_t *ts = new ts_packet_t("/home/nfs/zhougq/github/TSAnalyse/build/app/abc.ts");
+  ts_packet_t *ts = new ts_packet_t("./build/app/abc.ts");
   NIT *nit_ts = new NIT(0x10, 4);
+  BAT *bat_ts = new BAT(0x11, 64);
+  bat_ts->set_filter_table_id(0x4A);
   ts->open_filter(nit_ts);
+  ts->open_filter(bat_ts);
   ts->run();
   delete (nit_ts);
   return 0;

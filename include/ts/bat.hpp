@@ -13,6 +13,7 @@ struct BAT : public TS {
   BAT(uint16_t pid, uint16_t max_cnt) : TS(pid, max_cnt) {
     this->bat_info.resize(max_cnt);
   }
+  virtual bool dump();
   virtual bool parse(uint8_t *data, uint16_t len, void *priv);
   virtual bool update_callback(void);  // 当有区块更新时回调
   virtual bool finish_callback(void);  // 所有区块更新完回调

@@ -8,13 +8,24 @@ TS::TS() {
   this->pid = 0;
   this->filer_id = 0;
   this->last_crc32 = 0;
-  this->table_id = 0;
+  this->ts_num = 0;
+  memset(slot, 0, sizeof(slot));
+  memset(mask, 0, sizeof(mask));
 }
 TS::TS(uint16_t pid, uint16_t count) : TS() {
   this->pid = pid;
   this->b_need_notify = true;
   this->max_ts_num = count;
   this->unit.resize(count);
+}
+bool TS::check_match(uint8_t *data, uint8_t len) {
+  uint8_t i = 0;
+  for (i = 0; i < len && i < lengthof(this->slot); ++i) {
+    if ((data[i] & mask[i]) != slot[i]) {
+      break;
+    }
+  }
+  return i == lengthof(this->slot);
 }
 void ts_unit_t::restart(bool parsed_flag) {
   rcv_number = 0;
@@ -24,13 +35,13 @@ void ts_unit_t::restart(bool parsed_flag) {
   this->b_has_parsed = parsed_flag;
 }
 bool ts_unit_t::operator<(const ts_unit_t &other) const {
-  // unit id 从小到大会导致一些默认的0值排前面出问题，需要排序的时候一定不能加上无效的
-  return this->unit_id < other.unit_id
-         || (this->unit_id == other.unit_id
-             && this->last_section_number < other.last_section_number);
+  // unit id
+  // 从小到大会导致一些默认的0值排前面出问题，需要排序的时候一定不能加上无效的
+  return this->unit_id < other.unit_id ||
+         (this->unit_id == other.unit_id &&
+          this->last_section_number < other.last_section_number);
 }
 void TS::reset(bool flag) {
-  this->table_id = 0;
   this->unit_num = 0;
   this->last_crc32 = 0;
   this->b_need_notify = flag;
@@ -38,13 +49,31 @@ void TS::reset(bool flag) {
     this->unit[i].restart(false);
   }
 }
+bool TS::set_filter_table_id(uint8_t table_id) {
+  slot[0] = table_id;
+  mask[0] = 0xFF;
+  return true;
+}
+bool TS::set_filter_param(uint8_t *s, uint8_t *m, uint8_t depth) {
+  if (depth > 8) {
+    depth = 8;
+  }
+  if (s != nullptr && m != nullptr) {
+    for (uint8_t i = 0; i < depth; ++i) {
+      slot[i] = s[i];
+      mask[i] = m[i];
+    }
+  }
+  return true;
+}
 uint32_t TS::cal_crc32(void) {
   for (uint8_t i = 0; i < this->unit.size(); ++i) {
     this->unit[i].rcv_cnt = 0;
     this->unit[i].rcv_number = 0;
     this->unit[i].b_has_parsed = true;
   }
-  std::sort(this->unit.begin(), this->unit.begin() + this->unit_num);  // this->unit.end());
+  std::sort(this->unit.begin(),
+            this->unit.begin() + this->unit_num);  // this->unit.end());
   // TODO: calculate the crc32 of units
   return 0;
 }
@@ -66,10 +95,11 @@ bool TS::check_finish(ts_unit_t &cur_unit) {
         LOG_INFO("%d: 0x%x...", i, this->unit[i].unit_id);
       }
       LOG_INFO("received new units.\n");
-      LOG_INFO("max_cnt: %d, min_cnt: %d, unit_cnt = %d", max_cnt, min_cnt, this->unit_num);
+      LOG_INFO("max_cnt: %d, min_cnt: %d, unit_cnt = %d", max_cnt, min_cnt,
+               this->unit_num);
       reset(true);  // 值越大，越精确，但反应越慢
       update_callback();
-    } else if (min_cnt > 2) {
+    } else if (min_cnt > 3) {
       uint32_t crc32 = cal_crc32();
       if (this->last_crc32 != crc32) {
         LOG_INFO(
@@ -100,7 +130,6 @@ bool TS::parse(uint8_t *data, uint16_t len, void *priv) {
     LOG_INFO("error data too short\n");
     return false;
   }
-  this->table_id = data[0];
   uint16_t section_length = ((data[1] & 0x0F) << 8) | data[1];
   uint16_t pos = 3 + section_length;
   if (pos != len) {
@@ -110,15 +139,14 @@ bool TS::parse(uint8_t *data, uint16_t len, void *priv) {
     LOG_INFO("Error: rcv data too short.[%d]\n", pos);
     return false;
   }
-  uint32_t crc32
-      = (data[pos - 4] << 24) | (data[pos - 3] << 16) | (data[pos - 2] << 8) | data[pos - 1];
+  uint32_t crc32 = (data[pos - 4] << 24) | (data[pos - 3] << 16) |
+                   (data[pos - 2] << 8) | data[pos - 1];
   uint16_t unit_id = (data[3] << 8) | data[4];
   uint16_t i = 0;
   while (i < this->unit_num && this->unit[i].unit_id != unit_id) {
     ++i;
   }
   if (i >= this->unit.size()) {
-    LOG_INFO("Error: current ts unit too much.[%d].\n", this->table_id);
     reset(true);  // 全部重新接收
     return false;
   }
@@ -131,7 +159,6 @@ bool TS::parse(uint8_t *data, uint16_t len, void *priv) {
   uint8_t section_number = data[6];
   unit.last_section_number = data[7];
   if (section_number >= lengthof(unit.crc32)) {
-    LOG_INFO("Error: too much section.[%d][%d]", this->table_id, section_number);
     return true;
   }
   if (unit.crc32[section_number] == 0) {

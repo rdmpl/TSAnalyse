@@ -48,8 +48,9 @@ struct ts_unit_t {
  */
 struct TS {
   uint16_t pid;
+  uint8_t slot[8];  // 最多可以设置8个过滤深度
+  uint8_t mask[8];
   uint32_t filer_id;
-  uint8_t table_id;
   uint32_t last_crc32;  // calculted by unit
   bool b_need_notify;
   uint16_t max_ts_num;  // equal to max_ts_num;
@@ -58,6 +59,9 @@ struct TS {
   std::vector<ts_unit_t> unit;
   TS();
   TS(uint16_t pid, uint16_t max_count);
+  bool check_match(uint8_t *data, uint8_t len);
+  bool set_filter_table_id(uint8_t table_id);
+  bool set_filter_param(uint8_t *s, uint8_t *m, uint8_t depth);
   virtual void reset(bool flag);
   virtual bool parse(uint8_t *data, uint16_t len, void *priv);
   virtual bool update_callback(void) { return true; };  // 当有区块更新时回调

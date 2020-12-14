@@ -73,8 +73,10 @@ struct bat_info_t {
   uint16_t ts_id;
   uint16_t network_id;
   uint16_t bouquet_id;
+  uint16_t bouquet_name_len;
+  uint16_t service_num;
   uint8_t bouquet_name[MAX_SERVICE_NAME_LENGTH];
-  uint16_t service_id[128];  // 标记bouquet包含的节目
+  uint16_t service_id[512];  // 标记bouquet包含的节目
 };
 struct data_base_t {
   uint16_t prog_count;  // total count of prog
@@ -93,11 +95,13 @@ struct data_base_t {
   uint16_t lookup_node(const std::pair<uint16_t, uint16_t> &target) const;
   error_type_t update_prog(const prog_node_t &prog, uint16_t idx);
   error_type_t add_prog(const prog_node_t &prog);
-  error_type_t modify_prog(const prog_node_t &prog, const std::pair<uint16_t, uint16_t> &target);
+  error_type_t modify_prog(const prog_node_t &prog,
+                           const std::pair<uint16_t, uint16_t> &target);
   error_type_t del_prog(const std::pair<uint16_t, uint16_t> &target);
   // TODO: operations related to tp
   // TODO: tps should also be changed when updating prog
-  error_type_t modify_tp(const prog_tp_t &tp, const std::pair<uint16_t, uint16_t> &target);
+  error_type_t modify_tp(const prog_tp_t &tp,
+                         const std::pair<uint16_t, uint16_t> &target);
   error_type_t add_tp(const prog_tp_t &tp);
   error_type_t del_tp(const std::pair<uint16_t, uint16_t> &target);
   error_type_t refresh(void);

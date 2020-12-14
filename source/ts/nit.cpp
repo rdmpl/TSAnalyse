@@ -13,7 +13,8 @@ bool tp_info_t::freq_parse(uint8_t *data, uint8_t len) {
   this->tp.freq = bcd2integer(data, 4) / 100;
   this->tp.mod = data[6];  // data[5] == fec_outer
   this->tp.fec_inner = data[10] & 0xf;
-  this->tp.sym = bcd2integer(data + 7, 3);  // 这里还有点问题,可能精度不够，但不管了
+  this->tp.sym =
+      bcd2integer(data + 7, 3);  // 这里还有点问题,可能精度不够，但不管了
   return true;
 }
 bool tp_info_t::service_list_parse(uint8_t *data, uint8_t len) {
@@ -60,7 +61,6 @@ bool NIT::parse(uint8_t *data, uint16_t len, void *priv) {
   if (ret == false) {
     return false;
   }
-  this->table_id = data[0];
   uint16_t network_id = (data[3] << 8) | data[4];
   uint16_t i = 0;
   while (i < this->ts_num && this->tp_info[i].network_id != network_id) {
@@ -74,28 +74,18 @@ bool NIT::parse(uint8_t *data, uint16_t len, void *priv) {
   }
   nit_tp_info_t &tp_info = this->tp_info[i];
   tp_info.network_id = network_id;
-  uint16_t loop1_begin = 10;
-  uint16_t loop1_end = 10 + getu16len(data + 8, false);  // ((data[8] & 0xf) << 4) | data[9];
-  while (loop1_begin < loop1_end) {
-    uint8_t desc_tag = data[loop1_begin];
-    uint8_t desc_len = data[loop1_begin + 1];
-    tp_info.loop1_parse(data + loop1_begin + 2, desc_len);
-    loop1_begin += (2 + desc_len);
-  }
-  uint16_t loop2_begin = loop1_end;
+  uint16_t loop1_len = getu16len(data + 8, false);
+  tp_info.loop1_parse(data + 10, loop1_len);
+  uint16_t loop2_begin = 10 + loop1_len;
   // TODO: notify other thread to parse loop1 data
-  uint16_t loop2_end
-      = loop2_begin + 2
-        + getu16len(data + loop2_begin,
-                    false);  //((data[loop2_begin] & 0xf) << 8) | data[loop2_begin + 1];
+  uint16_t loop2_end = loop2_begin + 2 + getu16len(data + loop2_begin, false);
   loop2_begin += 2;
   i = tp_info.tp_count;
   while (loop2_begin < loop2_end && i < lengthof(tp_info.tp)) {
     tp_info.tp[i].tp.ts_id = (data[loop2_begin] << 8) | data[loop2_begin + 1];
-    tp_info.tp[i].tp.network_id = (data[loop2_begin + 2] << 8) | data[loop2_begin + 3];
-    uint16_t data_len
-        = getu16len(data + loop2_begin + 4,
-                    false);  //((data[loop2_begin + 4] & 0xf) << 8) | data[loop2_begin + 5];
+    tp_info.tp[i].tp.network_id =
+        (data[loop2_begin + 2] << 8) | data[loop2_begin + 3];
+    uint16_t data_len = getu16len(data + loop2_begin + 4, false);
     tp_info.tp[i].loop2_parse(data + loop2_begin + 6, data_len);
     loop2_begin += (6 + data_len);
     ++i;

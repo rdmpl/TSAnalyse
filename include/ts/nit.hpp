@@ -32,8 +32,9 @@ struct NIT : public TS {
     for (uint16_t i = 0; i < this->ts_num; ++i) {
       printf("\n%d: network_id = %x\n", i, tp_info[i].network_id);
       for (uint16_t j = 0; j < tp_info[i].tp_count; ++j) {
-        printf("\n%d:ts_id: 0x%x, frq: %d, sym: %d, mod = %d\n", j, tp_info[i].tp[j].tp.ts_id,
-               tp_info[i].tp[j].tp.freq, tp_info[i].tp[j].tp.sym, tp_info[i].tp[j].tp.mod);
+        printf("\n%d:ts_id: 0x%x, frq: %d, sym: %d, mod = %d\n", j,
+               tp_info[i].tp[j].tp.ts_id, tp_info[i].tp[j].tp.freq,
+               tp_info[i].tp[j].tp.sym, tp_info[i].tp[j].tp.mod);
         for (uint16_t k = 0; k < tp_info[i].tp[j].service_count; k++) {
           printf("0x%x  ", tp_info[i].tp[j].service_list[k].service_id);
         }
@@ -41,8 +42,11 @@ struct NIT : public TS {
       }
       printf("\n");
     }
+    return true;
   }
-  NIT(uint16_t pid, uint16_t max_tp_count) : TS(pid, max_tp_count) { tp_info.resize(max_tp_count); }
+  NIT(uint16_t pid, uint16_t max_tp_count) : TS(pid, max_tp_count) {
+    tp_info.resize(max_tp_count);
+  }
   // TODO: 要添加loop1和loop2的解析函数
 };
 #endif  // NIT_HPP__

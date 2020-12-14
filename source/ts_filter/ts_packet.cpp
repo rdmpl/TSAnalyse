@@ -10,7 +10,7 @@ bool ts_packet_t::header_parse(uint8_t *data, uint8_t len) {
   header.ada_field_control = (data[3] >> 4) & 0x3;
   header.continuity_conter = data[3] & 0xf;
   if (header.sync_byte != 0x47) {
-    LOG_INFO("error, sync_byte not ok");
+    // LOG_INFO("error, sync_byte not ok");
     return false;
   }
   return true;
@@ -37,7 +37,7 @@ void ts_packet_t::run(void) {
       if (i < 188) {
         read(file, data, i);  // sync
       }
-      LOG_INFO("sync");
+      // LOG_INFO("sync");
       continue;
     }
     auto &section = filter[header.pid];
@@ -48,9 +48,11 @@ void ts_packet_t::run(void) {
     if (header.payload_unit_start_indicator == 1) {
       if (section.data_len > 0) {
         // TODO: callback
-        // LOG_INFO("ok....pid = 0x%04x, len = %d", header.pid, section.data_len);
+        // LOG_INFO("ok....pid = 0x%04x, len = %d", header.pid,
+        // section.data_len);
         for (uint16_t i = 0; i < section.ts.size(); ++i) {
-          if (section.ts[i] != nullptr) {
+          if (section.ts[i] != nullptr &&
+              section.ts[i]->check_match(section.buffer, section.data_len)) {
             section.ts[i]->parse(section.buffer, section.data_len, nullptr);
           }
         }
@@ -60,7 +62,8 @@ void ts_packet_t::run(void) {
       len = 188 - begin;
       memcpy(section.buffer, data + begin, len);
     } else {
-      if ((section.last_header.continuity_conter + 1) % 16 != header.continuity_conter) {
+      if ((section.last_header.continuity_conter + 1) % 16 !=
+          header.continuity_conter) {
         // LOG_INFO("error: continuous error");
         section.reset();
         continue;
@@ -74,7 +77,8 @@ void ts_packet_t::run(void) {
     }
     section.data_len += len;
     if (section.data_len > 3990) {
-      LOG_INFO("error: data too long, pid = 0x%4x, len = %d", header.pid, section.data_len);
+      LOG_INFO("error: data too long, pid = 0x%4x, len = %d", header.pid,
+               section.data_len);
     }
     memcpy(&section.last_header, &header, sizeof(header));
   }
