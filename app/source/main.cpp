@@ -5,6 +5,7 @@
 #include <string>
 #include <ts/bat.hpp>
 #include <ts/nit.hpp>
+#include <ts/pat.hpp>
 #include <ts_filter/ts_packet.hpp>
 #include <unordered_map>
 #if 0
@@ -83,9 +84,11 @@ int main(int argc, char **argv) {
   ts_packet_t *ts = new ts_packet_t("./build/app/abc.ts");
   NIT *nit_ts = new NIT(0x10, 4);
   BAT *bat_ts = new BAT(0x11, 64);
+  PAT *pat_ts = new PAT(0x00, 64);
   bat_ts->set_filter_table_id(0x4A);
   ts->open_filter(nit_ts);
   ts->open_filter(bat_ts);
+  ts->open_filter(pat_ts);
   ts->run();
   delete (nit_ts);
   return 0;
