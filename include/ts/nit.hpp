@@ -4,6 +4,8 @@
 
 #include "ts.hpp"
 #include "vector"
+namespace ts {
+
 struct nit_service_info_t {
   uint16_t service_id;
   uint16_t service_type;
@@ -23,7 +25,7 @@ struct nit_tp_info_t {
   virtual bool loop1_parse(uint8_t *data, uint16_t len);
   virtual ~nit_tp_info_t(){};
 };
-struct NIT : public TS {
+struct nit : public abstract_ts {
   std::vector<nit_tp_info_t> tp_info;
   virtual bool parse(uint8_t *data, uint16_t len, void *priv);
   virtual bool update_callback(void);  // 当有区块更新时回调
@@ -44,9 +46,10 @@ struct NIT : public TS {
     }
     return true;
   }
-  NIT(uint16_t pid, uint16_t max_tp_count) : TS(pid, max_tp_count) {
+  nit(uint16_t pid, uint16_t max_tp_count) : abstract_ts(pid, max_tp_count) {
     tp_info.resize(max_tp_count);
   }
   // TODO: 要添加loop1和loop2的解析函数
 };
+}  // namespace ts
 #endif  // NIT_HPP__

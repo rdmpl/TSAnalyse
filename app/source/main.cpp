@@ -69,7 +69,7 @@ int main(int argc, char **argv) {
   data_base_t db;
   db.refresh();
   std::cout << db.lookup_node({1, 1}) << std::endl;
-  NIT nit(102, 20);
+  nit nit(102, 20);
   nit.parse(nullptr, 0, nullptr);
   LOG_INFO("error");
   A *ap = nullptr;
@@ -82,9 +82,9 @@ int main(int argc, char **argv) {
   }
 #endif
   ts_packet_t *ts = new ts_packet_t("./build/app/abc.ts");
-  NIT *nit_ts = new NIT(0x10, 4);
-  BAT *bat_ts = new BAT(0x11, 64);
-  PAT *pat_ts = new PAT(0x00, 64);
+  ts::nit *nit_ts = new ts::nit(0x10, 4);
+  ts::bat *bat_ts = new ts::bat(0x11, 64);
+  ts::pat *pat_ts = new ts::pat(0x00, 64);
   bat_ts->set_filter_table_id(0x4A);
   ts->open_filter(nit_ts);
   ts->open_filter(bat_ts);

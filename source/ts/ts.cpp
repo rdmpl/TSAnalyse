@@ -1,7 +1,8 @@
 #include <algorithm>
 #include <cstring>
 #include <ts/ts.hpp>
-TS::TS() {
+namespace ts {
+abstract_ts::abstract_ts() {
   this->max_ts_num = 0;
   this->unit.resize(0);
   this->unit_num = 0;
@@ -12,13 +13,13 @@ TS::TS() {
   memset(slot, 0, sizeof(slot));
   memset(mask, 0, sizeof(mask));
 }
-TS::TS(uint16_t pid, uint16_t count) : TS() {
+abstract_ts::abstract_ts(uint16_t pid, uint16_t count) : abstract_ts() {
   this->pid = pid;
   this->b_need_notify = true;
   this->max_ts_num = count;
   this->unit.resize(count);
 }
-bool TS::check_match(uint8_t *data, uint8_t len) {
+bool abstract_ts::check_match(uint8_t *data, uint8_t len) {
   uint8_t i = 0;
   for (i = 0; i < len && i < lengthof(this->slot); ++i) {
     if ((data[i] & mask[i]) != slot[i]) {
@@ -41,7 +42,7 @@ bool ts_unit_t::operator<(const ts_unit_t &other) const {
          (this->unit_id == other.unit_id &&
           this->last_section_number < other.last_section_number);
 }
-void TS::reset(bool flag) {
+void abstract_ts::reset(bool flag) {
   this->unit_num = 0;
   this->last_crc32 = 0;
   this->b_need_notify = flag;
@@ -49,12 +50,12 @@ void TS::reset(bool flag) {
     this->unit[i].restart(false);
   }
 }
-bool TS::set_filter_table_id(uint8_t table_id) {
+bool abstract_ts::set_filter_table_id(uint8_t table_id) {
   slot[0] = table_id;
   mask[0] = 0xFF;
   return true;
 }
-bool TS::set_filter_param(uint8_t *s, uint8_t *m, uint8_t depth) {
+bool abstract_ts::set_filter_param(uint8_t *s, uint8_t *m, uint8_t depth) {
   if (depth > 8) {
     depth = 8;
   }
@@ -66,7 +67,7 @@ bool TS::set_filter_param(uint8_t *s, uint8_t *m, uint8_t depth) {
   }
   return true;
 }
-uint32_t TS::cal_crc32(void) {
+uint32_t abstract_ts::cal_crc32(void) {
   for (uint8_t i = 0; i < this->unit.size(); ++i) {
     this->unit[i].rcv_cnt = 0;
     this->unit[i].rcv_number = 0;
@@ -77,7 +78,7 @@ uint32_t TS::cal_crc32(void) {
   // TODO: calculate the crc32 of units
   return 0;
 }
-bool TS::check_finish(ts_unit_t &cur_unit) {
+bool abstract_ts::check_finish(ts_unit_t &cur_unit) {
   uint16_t i = 0;
   bool ret = false;
   if (cur_unit.rcv_number == cur_unit.last_section_number + 1) {
@@ -124,7 +125,7 @@ bool TS::check_finish(ts_unit_t &cur_unit) {
   }
   return ret;
 }
-bool TS::parse(uint8_t *data, uint16_t len, void *priv) {
+bool abstract_ts::parse(uint8_t *data, uint16_t len, void *priv) {
   bool ret = false;
   if (len < 3 || data == nullptr) {
     LOG_INFO("error data too short\n");
@@ -172,3 +173,4 @@ bool TS::parse(uint8_t *data, uint16_t len, void *priv) {
   check_finish(unit);
   return ret;
 }
+}  // namespace ts

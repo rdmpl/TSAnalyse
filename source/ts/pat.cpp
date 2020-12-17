@@ -1,18 +1,19 @@
 #include <cstring>
 #include <ts/pat.hpp>
-PAT::PAT(uint16_t pid, uint16_t max_count) : TS(pid, max_count) {
+namespace ts {
+pat::pat(uint16_t pid, uint16_t max_count) : abstract_ts(pid, max_count) {
   pmt_pid.resize(max_count);
 }
-bool PAT::finish_callback(void) {
+bool pat::finish_callback(void) {
   for (uint16_t i = 0; i < this->ts_num; ++i) {
     printf("%d:program number, 0x%x, pid 0x%x.\n", i,
            this->pmt_pid[i].program_number, this->pmt_pid[i].program_number);
   }
   return true;
 }
-bool PAT::parse(uint8_t *data, uint16_t len, void *priv) {
+bool pat::parse(uint8_t *data, uint16_t len, void *priv) {
   bool ret = true;
-  ret = TS::parse(data, len, priv);
+  ret = abstract_ts::parse(data, len, priv);
   if (ret == false) {
     return false;
   }
@@ -35,3 +36,4 @@ bool PAT::parse(uint8_t *data, uint16_t len, void *priv) {
   this->ts_num = i;
   return true;
 }
+}  // namespace ts

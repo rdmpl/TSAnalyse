@@ -1,9 +1,9 @@
 #include <cstring>
 #include <ts/pmt.hpp>
-
-bool PMT::parse(uint8_t *data, uint16_t len, void *priv) {
+namespace ts {
+bool pmt::parse(uint8_t *data, uint16_t len, void *priv) {
   bool ret = false;
-  ret = TS::parse(data, len, priv);
+  ret = abstract_ts::parse(data, len, priv);
   if (ret == false) {
     return false;
   }
@@ -35,3 +35,4 @@ bool PMT::parse(uint8_t *data, uint16_t len, void *priv) {
   }
   return true;
 }
+}  // namespace ts

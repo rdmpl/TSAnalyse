@@ -1,5 +1,6 @@
 #include <cstring>
 #include <ts/nit.hpp>
+namespace ts {
 bool tp_info_t::freq_parse(uint8_t *data, uint8_t len) {
   /**
    * frequency:32
@@ -55,9 +56,9 @@ bool tp_info_t::loop2_parse(uint8_t *data, uint16_t len) {
   }
   return true;
 }
-bool NIT::parse(uint8_t *data, uint16_t len, void *priv) {
+bool nit::parse(uint8_t *data, uint16_t len, void *priv) {
   bool ret = false;
-  ret = TS::parse(data, len, priv);
+  ret = abstract_ts::parse(data, len, priv);
   if (ret == false) {
     return false;
   }
@@ -96,9 +97,10 @@ bool NIT::parse(uint8_t *data, uint16_t len, void *priv) {
   tp_info.tp_count = i;
   return false;
 }
-bool NIT::update_callback(void) { return true; };  // 当有区块更新时回调
-bool NIT::finish_callback(void) {
+bool nit::update_callback(void) { return true; };  // 当有区块更新时回调
+bool nit::finish_callback(void) {
   LOG_INFO("all nit data finished.\n");
   dump();
   return true;
 };  // 所有区块更新完回调
+}  // namespace ts

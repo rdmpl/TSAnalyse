@@ -6,6 +6,8 @@
 #include <program/program.hpp>
 #include <ultilities/ultilities.hpp>
 #include <vector>
+namespace ts {
+
 inline uint16_t getu16len(uint8_t *data, bool endian_big) {
   uint16_t res;
   uint8_t *ptr = (uint8_t *)(&res);
@@ -41,12 +43,12 @@ struct ts_unit_t {
   virtual ~ts_unit_t() {}
 };
 /**
- * The Base class of all ts stream, including PAT, PMT, BAT, NIT, SDT
+ * The Base class of all ts stream, including pat, pmt, BAT, NIT, sdt
  * the parse function just check whether the ts is updated or whether
  * current section need to be parsed.
  * The child class should parse the data, if udpated.
  */
-struct TS {
+struct abstract_ts {
   uint16_t pid;
   uint8_t slot[8];  // 最多可以设置8个过滤深度
   uint8_t mask[8];
@@ -57,8 +59,8 @@ struct TS {
   uint16_t unit_num;    // num of unit
   uint16_t ts_num;      // num of ts_data
   std::vector<ts_unit_t> unit;
-  TS();
-  TS(uint16_t pid, uint16_t max_count);
+  abstract_ts();
+  abstract_ts(uint16_t pid, uint16_t max_count);
   bool check_match(uint8_t *data, uint8_t len);
   bool set_filter_table_id(uint8_t table_id);
   bool set_filter_param(uint8_t *s, uint8_t *m, uint8_t depth);
@@ -68,6 +70,7 @@ struct TS {
   virtual bool finish_callback(void) { return true; };  // 所有区块更新完回调
   virtual uint32_t cal_crc32(void);
   virtual bool check_finish(ts_unit_t &cur_unit);
-  virtual ~TS(){};
+  virtual ~abstract_ts(){};
 };
+}  // namespace ts
 #endif  // end of TS_HPP__

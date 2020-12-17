@@ -1,5 +1,5 @@
 #include <ts/bat.hpp>
-
+namespace ts {
 uint16_t convert_to_unicode(uint8_t *src, uint16_t len, uint8_t *dest,
                             uint16_t max_len) {
   uint16_t i = 0;
@@ -58,9 +58,9 @@ bool ts_bat_t::loop2_parse(uint8_t *data, uint16_t len) {
   }
   return true;
 }
-bool BAT::parse(uint8_t *data, uint16_t len, void *priv) {
+bool bat::parse(uint8_t *data, uint16_t len, void *priv) {
   bool ret = false;
-  ret = TS::parse(data, len, priv);
+  ret = abstract_ts::parse(data, len, priv);
   if (ret == false) {  // current section not need to parse
     return false;
   }
@@ -94,7 +94,7 @@ bool BAT::parse(uint8_t *data, uint16_t len, void *priv) {
   return false;
   return true;
 }
-bool BAT::dump(void) {
+bool bat::dump(void) {
   for (uint8_t i = 0; i < this->ts_num; ++i) {
     printf("\n\n%d: bat_id = 0x%x\n", i, this->bat_info[i].bat.bouquet_id);
     for (uint16_t j = 0; j < this->bat_info[i].bat.service_num; ++j) {
@@ -103,9 +103,10 @@ bool BAT::dump(void) {
   }
   return true;
 }
-bool BAT::update_callback(void) { return true; }  // 当有区块更新时回调
-bool BAT::finish_callback(void) {
+bool bat::update_callback(void) { return true; }  // 当有区块更新时回调
+bool bat::finish_callback(void) {
   LOG_INFO("all bat finished: bat_num = %d", this->ts_num);
   dump();
   return true;
 }  // 所有区块更新完回调
+}  // namespace ts

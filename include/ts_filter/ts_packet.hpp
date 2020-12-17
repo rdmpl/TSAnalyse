@@ -23,7 +23,7 @@ struct ts_section_t {
   ts_packet_header_t last_header;
   uint16_t data_len;
   uint8_t buffer[5200];
-  std::vector<TS *> ts;
+  std::vector<ts::abstract_ts *> ts;
   void reset() {
     memset(&last_header, 0, sizeof(last_header));
     data_len = 0;
@@ -38,7 +38,7 @@ struct ts_packet_t {
   std::map<uint16_t, ts_section_t> filter;
   void run(void);
   bool header_parse(uint8_t *data, uint8_t len);
-  bool open_filter(TS *ts) {
+  bool open_filter(ts::abstract_ts *ts) {
     if (ts) {
       uint16_t pid = ts->pid;
       filter[pid].ts.push_back(ts);
