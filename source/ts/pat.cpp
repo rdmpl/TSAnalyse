@@ -1,9 +1,7 @@
 #include <cstring>
 #include <ts/pat.hpp>
 namespace ts {
-pat::pat(uint16_t pid, uint16_t max_count) : abstract_ts(pid, max_count) {
-  pmt_pid.resize(max_count);
-}
+pat::pat(uint16_t pid) : abstract_ts(pid), pmt_pid() {}
 bool pat::finish_callback(void) {
   for (uint16_t i = 0; i < this->ts_num; ++i) {
     printf("%d:program number, 0x%x, pid 0x%x.\n", i,

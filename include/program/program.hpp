@@ -5,6 +5,7 @@
 
 #include <ultilities/ultilities.hpp>
 #include <utility>
+#include <vector>
 typedef int32_t error_type_t;
 enum {
   MAX_BOUQUET_COUNT = 64,
@@ -63,11 +64,13 @@ struct prog_node_t {
 };
 struct prog_tp_t {
   uint16_t ts_id;
+  uint16_t original_network_id;
   uint16_t network_id;
   uint32_t freq;
   uint16_t sym;
   uint8_t mod;  // modulation
   uint8_t fec_inner;
+  std::vector<std::pair<uint16_t, uint8_t>> service_info;
 };
 struct bat_info_t {
   uint16_t ts_id;
@@ -76,7 +79,7 @@ struct bat_info_t {
   uint16_t bouquet_name_len;
   uint16_t service_num;
   uint8_t bouquet_name[MAX_SERVICE_NAME_LENGTH];
-  uint16_t service_id[512];  // 标记bouquet包含的节目
+  std::vector<std::pair<uint16_t, uint8_t>> service_info;
 };
 struct data_base_t {
   uint16_t prog_count;  // total count of prog

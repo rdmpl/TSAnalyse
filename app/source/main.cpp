@@ -81,10 +81,10 @@ int main(int argc, char **argv) {
     printf("%d: bp[%d]. a = %d, .b = %d\n", i, i, bp[i].a, bp[i].b);
   }
 #endif
-  ts_packet_t *ts = new ts_packet_t("./build/app/abc.ts");
-  ts::nit *nit_ts = new ts::nit(0x10, 4);
-  ts::bat *bat_ts = new ts::bat(0x11, 64);
-  ts::pat *pat_ts = new ts::pat(0x00, 64);
+  ts_packet_t *ts = new ts_packet_t("./abc.ts");
+  ts::nit *nit_ts = new ts::nit(0x10);
+  ts::bat *bat_ts = new ts::bat(0x11);
+  ts::pat *pat_ts = new ts::pat(0x00);
   bat_ts->set_filter_table_id(0x4A);
   ts->open_filter(nit_ts);
   ts->open_filter(bat_ts);
