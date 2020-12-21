@@ -55,9 +55,6 @@ struct abstract_ts {
   uint32_t filer_id;
   uint32_t last_crc32;  // calculted by unit
   bool b_need_notify;
-  uint16_t max_ts_num;  // equal to max_ts_num;
-  uint16_t unit_num;    // num of unit
-  uint16_t ts_num;      // num of ts_data
   std::vector<ts_unit_t> unit;
   abstract_ts();
   abstract_ts(uint16_t pid);

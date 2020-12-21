@@ -3,13 +3,10 @@
 #include <ts/ts.hpp>
 namespace ts {
 abstract_ts::abstract_ts() {
-  this->max_ts_num = 0;
   this->unit.resize(0);
-  this->unit_num = 0;
   this->pid = 0;
   this->filer_id = 0;
   this->last_crc32 = 0;
-  this->ts_num = 0;
   memset(slot, 0, sizeof(slot));
   memset(mask, 0, sizeof(mask));
 }
@@ -41,7 +38,6 @@ bool ts_unit_t::operator<(const ts_unit_t &other) const {
           this->last_section_number < other.last_section_number);
 }
 void abstract_ts::reset(bool flag) {
-  this->unit_num = 0;
   this->last_crc32 = 0;
   this->b_need_notify = flag;
   for (uint16_t i = 0; i < this->unit.size(); ++i) {
