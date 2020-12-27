@@ -87,10 +87,10 @@ bool abstract_ts::check_finish(ts_unit_t &cur_unit) {
 
     if (max_cnt - min_cnt > 6) {
       for (i = 0; i < this->unit.size(); i++) {
-        LOG_INFO("%d: 0x%x...", i, this->unit[i].unit_id);
+        LOG_INFO("{d}: 0x{:04x}...", i, this->unit[i].unit_id);
       }
       LOG_INFO("received new units.\n");
-      LOG_INFO("max_cnt: %d, min_cnt: %d, unit_cnt = %d", max_cnt, min_cnt,
+      LOG_INFO("max_cnt: {d}, min_cnt: {d}, unit_cnt = {d}", max_cnt, min_cnt,
                this->unit.size());
       reset(true);  // 值越大，越精确，但反应越慢
       update_callback();
@@ -99,7 +99,7 @@ bool abstract_ts::check_finish(ts_unit_t &cur_unit) {
       if (this->last_crc32 != crc32) {
         LOG_INFO(
             "Note: received all units, and the crc32 "
-            "changed.[0x%08x][0x%08x]\n",
+            "changed.[0x{:08x}][0x{:08x}]\n",
             this->last_crc32, crc32);
         reset(true);
         update_callback();
@@ -131,7 +131,7 @@ bool abstract_ts::parse(uint8_t *data, uint16_t len, void *priv) {
     // LOG_INFO("Note: data length not match.[%d][%d].\n", pos, len);
   }
   if (pos < 4) {
-    LOG_INFO("Error: rcv data too short.[%d]\n", pos);
+    LOG_INFO("Error: rcv data too short.[{:d}\n", pos);
     return false;
   }
   uint32_t crc32 = (data[pos - 4] << 24) | (data[pos - 3] << 16) |

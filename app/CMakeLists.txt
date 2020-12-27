@@ -27,4 +27,4 @@ add_executable(app ${sources})
 
 set_target_properties(app PROPERTIES CXX_STANDARD 17 OUTPUT_NAME "TSAnalyse")
 
-target_link_libraries(app TSAnalyse cxxopts)
+target_link_libraries(app TSAnalyse cxxopts fmt)

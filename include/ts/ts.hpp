@@ -50,10 +50,10 @@ struct ts_unit_t {
  */
 struct abstract_ts {
   uint16_t pid;
-  uint8_t slot[8];  // 最多可以设置8个过滤深度
+  uint8_t slot[8];
   uint8_t mask[8];
   uint32_t filer_id;
-  uint32_t last_crc32;  // calculted by unit
+  uint32_t last_crc32;
   bool b_need_notify;
   std::vector<ts_unit_t> unit;
   abstract_ts();

@@ -22,7 +22,7 @@ bool bat::loop1_parse(uint8_t *data, uint16_t len, bat_info_t &bat) {
       case 0x4a:  // if bid = 0xc0 is the startup program of ucn
         if (bat.bouquet_id == 0xc0) {
           uint16_t sid = (data[loop_len + 2] << 8) | data[loop_len + 3];
-          LOG_INFO("start_up service id = 0x%x", sid);
+          LOG_INFO("start_up service id = {}", sid);
         }
         break;
       default:
@@ -98,7 +98,7 @@ bool bat::dump(void) {
 }
 bool bat::update_callback(void) { return true; }  // 当有区块更新时回调
 bool bat::finish_callback(void) {
-  LOG_INFO("all bat finished: bat_num = %d", this->bat_info.size());
+  LOG_INFO("all bat finished: bat_num = {}", this->bat_info.size());
   dump();
   return true;
 }  // 所有区块更新完回调
